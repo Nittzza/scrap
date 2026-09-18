@@ -325,6 +325,46 @@ let ytPlayer = null;
 let ytReady = false;
 let ytPollInterval = null;
 let isSeekingRecordPlayer = false;
+let pendingPlay = false;
+
+// Actually starts playback, with a fallback for when the browser blocks
+// audible autoplay. That happens specifically on the "pending" path
+// below — the click that queued the play request was a real user
+// gesture, but by the time the YouTube API finishes loading and this
+// actually runs, the browser no longer credits it as one, since a
+// browser's "this came from a click" window doesn't survive an async
+// wait. If that happens, fall back to a muted start and unmute on the
+// visitor's very next click/keypress (which, in practice, is almost
+// immediate — they just clicked an icon).
+function playWithAutoplayFallback() {
+  ytPlayer.playVideo();
+  setTimeout(() => {
+    if (ytPlayer.getPlayerState() !== YT.PlayerState.PLAYING) {
+      ytPlayer.mute();
+      ytPlayer.playVideo();
+      const unmute = () => {
+        ytPlayer.unMute();
+        document.removeEventListener("click", unmute);
+        document.removeEventListener("keydown", unmute);
+      };
+      document.addEventListener("click", unmute, { once: true });
+      document.addEventListener("keydown", unmute, { once: true });
+    }
+  }, 500);
+}
+
+// Called by the Digi Scrap icon and the MP3 icon alike — either one
+// should start the song. The YouTube API loads asynchronously, so if
+// it isn't ready yet (e.g. the very first click right after the page
+// loads), this remembers to play as soon as onReady fires instead of
+// silently doing nothing.
+function playSong() {
+  if (ytReady) {
+    playWithAutoplayFallback();
+  } else {
+    pendingPlay = true;
+  }
+}
 
 // Called automatically by the YouTube IFrame API script once it's loaded.
 window.onYouTubeIframeAPIReady = function () {
@@ -344,6 +384,10 @@ window.onYouTubeIframeAPIReady = function () {
         ytReady = true;
         ytPlayer.setVolume(Number(rpVolumeInput.value));
         updateRecordPlayerUI();
+        if (pendingPlay) {
+          pendingPlay = false;
+          playWithAutoplayFallback();
+        }
       },
       onStateChange: (e) => {
         if (e.data === YT.PlayerState.PLAYING) {

@@ -12,6 +12,11 @@
 <link href="https://fonts.googleapis.com/css2?family=Pacifico&family=Baloo+2:wght@400;500;600;700;800&family=Caveat:wght@500;600;700&family=VT323&display=swap" rel="stylesheet">
 
 <link rel="stylesheet" href="css/style.css" />
+
+<!-- Loaded as early as possible so the YouTube player is likely ready
+     by the time anyone clicks the Digi Scrap or MP3 icon — see the
+     "MP3 PLAYER POPUP" section of js/script.js. -->
+<script src="https://www.youtube.com/iframe_api"></script>
 </head>
 <body>
 
@@ -143,7 +148,6 @@
   <div class="page-indicator" id="pageIndicator"></div>
 </section>
 
-<script src="https://www.youtube.com/iframe_api"></script>
 <script src="js/script.js"></script>
 </body>
 </html>
