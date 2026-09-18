@@ -1,0 +1,149 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1.0" />
+<title>My Scrapbook.exe</title>
+
+<!-- Google Fonts: Pacifico = headline script font, Baloo 2 = rounded supporting text,
+     Caveat = handwritten captions. Swap these in css/style.css if you want different ones. -->
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Pacifico&family=Baloo+2:wght@400;500;600;700;800&family=Caveat:wght@500;600;700&family=VT323&display=swap" rel="stylesheet">
+
+<link rel="stylesheet" href="css/style.css" />
+</head>
+<body>
+
+<!-- ============================================================
+     SCREEN 1 — PASSWORD GATE
+     Uses the real Windows 7 lock-screen image (photos/lock-screen.png) as
+     the visual, with an invisible real <input>/<button> laid exactly over
+     its drawn password box + arrow so it actually works. See the
+     .win7-real-input / .win7-real-submit rules in css/style.css for the
+     alignment percentages if you ever swap the image for a different one.
+============================================================= -->
+<section id="screen-password" class="screen active">
+  <div class="win7-lock-frame" id="loginWindow">
+    <img src="photos/lock-screen.png" class="win7-lock-image" alt="Windows lock screen — Digi Scrap" />
+    <input type="password" id="passwordInput" class="win7-real-input" placeholder="Password" autocomplete="off" aria-label="Password" />
+    <button id="okButton" class="win7-real-submit" type="button" aria-label="submit"></button>
+    <p class="win7-error" id="win7Error">The password is incorrect. Try again.</p>
+  </div>
+
+  <button class="win7-power-btn" type="button" id="powerBtn" title="shut down">⏻</button>
+</section>
+
+<!-- ============================================================
+     SCREEN 2 — COVER PAGE
+     Plain desktop (photos/wallpaper.png) with one "Digi Scrap" icon.
+     Clicking it opens the Digi Scrap.exe window, which pages through a
+     fixed sequence of pre-made screenshots (DIARY_PAGES in script.js):
+     closed diary -> first page -> second page -> third image -> fourth
+     image. Each of those pictures already has minimize/maximize/close
+     drawn into its top-right corner and Open/Cancel drawn at the
+     bottom, at a slightly different position per image, so script.js
+     repositions these 5 invisible buttons to match on every page
+     change (see DIARY_PAGES for the measured percentages). Menu bar,
+     toolbar icons, and "Print..." are just part of the pictures — not
+     wired to anything.
+============================================================= -->
+<section id="screen-cover" class="screen">
+  <div class="sky-bg"></div>
+
+  <button class="desktop-shortcut" id="digiScrapIcon" type="button">
+    <img src="photos/digi-scrap-icon.png" alt="Digi Scrap" draggable="false" />
+  </button>
+
+  <div class="diary-window" id="coverWindow">
+    <img src="photos/closed-diary.png" class="diary-image" id="diaryPageImage" alt="Digi Scrap.exe" draggable="false" />
+    <button class="diary-btn" id="coverWindowMinimizeBtn" type="button" aria-label="minimize"></button>
+    <button class="diary-btn" id="coverWindowMaximizeBtn" type="button" aria-label="maximize"></button>
+    <button class="diary-btn" id="coverWindowCloseBtn" type="button" aria-label="close"></button>
+    <button class="diary-btn" id="openBookBtn" type="button" aria-label="open"></button>
+    <button class="diary-btn" id="coverWindowCancelBtn" type="button" aria-label="cancel"></button>
+  </div>
+
+  <button class="page-arrow diary-nav-btn diary-nav-left" id="diaryPrevBtn" type="button" aria-label="previous page">❮</button>
+  <button class="page-arrow diary-nav-btn diary-nav-right" id="diaryNextBtn" type="button" aria-label="next page">❯</button>
+
+  <!-- MP3 player desktop icon + popup. The song streams via the YouTube
+       IFrame API (hidden — only the custom popup UI is visible); see
+       ytPlayerContainer below and the "MP3 PLAYER POPUP" section of
+       script.js. The popup picture (photos/record-player-popup.png)
+       already has all its buttons drawn in; real invisible controls sit
+       exactly on top of them (measured the same way as the diary
+       window buttons). -->
+  <button class="desktop-shortcut" id="musicPlayerIcon" type="button">
+    <img src="photos/music player.png" alt="MP3 Player" draggable="false" />
+  </button>
+
+  <div class="rp-window" id="recordPlayerWindow">
+    <img src="photos/record-player-popup.png" class="rp-image" alt="MP3 Player" draggable="false" />
+
+    <button class="rp-btn" id="rpMinimizeBtn" type="button" aria-label="minimize"></button>
+    <button class="rp-btn" id="rpMaximizeBtn" type="button" aria-label="maximize"></button>
+    <button class="rp-btn" id="rpCloseBtn" type="button" aria-label="close"></button>
+
+    <button class="rp-btn" id="rpRewindBtn" type="button" aria-label="rewind 10 seconds"></button>
+    <button class="rp-btn" id="rpPlayPauseBtn" type="button" aria-label="play or pause"></button>
+    <button class="rp-btn" id="rpForwardBtn" type="button" aria-label="forward 10 seconds"></button>
+    <button class="rp-btn" id="rpLoopBtn" type="button" aria-label="restart"></button>
+
+    <div class="rp-progress-wrap" id="rpProgressWrap">
+      <div class="rp-progress-fill" id="rpProgressFill"></div>
+    </div>
+    <input type="range" class="rp-seek-input" id="rpSeekInput" min="0" max="1000" value="0" step="1" aria-label="seek" />
+
+    <div class="rp-time-patch rp-time-current-patch"></div>
+    <span class="rp-time rp-time-current" id="rpCurrentTime">0:00</span>
+    <div class="rp-time-patch rp-time-duration-patch"></div>
+    <span class="rp-time rp-time-duration" id="rpDurationTime">0:00</span>
+
+    <button class="rp-btn" id="rpMuteBtn" type="button" aria-label="mute"></button>
+    <input type="range" class="rp-volume-input" id="rpVolumeInput" min="0" max="100" value="100" step="1" aria-label="volume" />
+  </div>
+
+  <!-- Hidden YouTube player — audio only, no visible video. -->
+  <div class="yt-hidden-player"><div id="ytPlayerContainer"></div></div>
+</section>
+
+<!-- ============================================================
+     SCREEN 3 — THE SCRAPBOOK
+============================================================= -->
+<section id="screen-book" class="screen">
+  <div class="sky-bg"></div>
+
+  <!-- Chapters sidebar, retro Windows folder-list style -->
+  <button id="chaptersToggle" class="chapters-toggle" type="button">📁 Chapters</button>
+  <aside class="win-window chapters-window" id="chaptersWindow">
+    <div class="win-titlebar">
+      <span class="win-title">📁 Chapters</span>
+      <div class="win-controls">
+        <button class="win-btn" type="button" id="chaptersCloseBtn">✕</button>
+      </div>
+    </div>
+    <div class="win-body chapters-body">
+      <ul class="chapters-list" id="chaptersList"><!-- filled by script.js --></ul>
+    </div>
+  </aside>
+
+  <div class="book-stage">
+    <button class="page-arrow arrow-left" id="prevPageBtn" type="button" aria-label="previous page">❮</button>
+
+    <div class="book" id="book">
+      <div class="spiral-binding" id="spiralBinding"><!-- filled by script.js --></div>
+      <div class="book-page page-left" id="pageLeft"><!-- filled by script.js --></div>
+      <div class="book-page page-right" id="pageRight"><!-- filled by script.js --></div>
+    </div>
+
+    <button class="page-arrow arrow-right" id="nextPageBtn" type="button" aria-label="next page">❯</button>
+  </div>
+
+  <div class="page-indicator" id="pageIndicator"></div>
+</section>
+
+<script src="https://www.youtube.com/iframe_api"></script>
+<script src="js/script.js"></script>
+</body>
+</html>
