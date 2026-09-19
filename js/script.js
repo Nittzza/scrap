@@ -158,6 +158,7 @@ function unlockScrapbook() {
   // per browser — see the "already unlocked?" check in the INIT section.
   localStorage.setItem("scrapbookUnlocked", "true");
   switchScreen(screenPassword, screenCover);
+  playSong(); // start the moment the desktop opens, not on a later click
 }
 
 okButton.addEventListener("click", checkPassword);
@@ -401,6 +402,12 @@ window.onYouTubeIframeAPIReady = function () {
           ytPlayer.playVideo();
         }
         updateRecordPlayerUI();
+      },
+      // If this fires, open the browser console (F12) to see which
+      // code logged below — that tells us exactly why it won't play
+      // (e.g. 101/150 = embedding blocked, 2 = bad video ID).
+      onError: (e) => {
+        console.error("YouTube player error, code:", e.data);
       },
     },
   });
@@ -702,6 +709,7 @@ renderSpread(0);
 if (localStorage.getItem("scrapbookUnlocked") === "true") {
   screenPassword.classList.remove("active");
   screenCover.classList.add("active");
+  playSong();
 } else {
   passwordInput.focus();
 }
